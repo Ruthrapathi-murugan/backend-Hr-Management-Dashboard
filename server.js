@@ -13,6 +13,7 @@ import userRoutes from './routes/users.js';
 import authRoutes from './routes/auth.js';
 import employeeRoutes from './routes/employeeRoutes.js';
 import LeaveRequest from './models/leaveRequestModel.js';
+import Candidate from './models/Candidate.js'; // Ensure this import is correct
 
 dotenv.config();
 
@@ -25,7 +26,7 @@ connectDB();
 
 // CORS configuration
 app.use(cors({
-  origin: ['http://localhost:5173' ,'https://boisterous-bienenstitch-2fcc86.netlify.app'],
+  origin: ['http://localhost:5173', 'https://boisterous-bienenstitch-2fcc86.netlify.app'],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   allowedHeaders: 'Content-Type, Authorization'
@@ -86,7 +87,8 @@ app.post('/api/leave-requests', async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
-// candidate hiring
+
+// Candidate hiring routes
 app.get('/api/candidates', async (req, res) => {
   try {
     const candidates = await Candidate.find();
@@ -108,13 +110,12 @@ app.post('/api/candidates', async (req, res) => {
 
 app.put('/api/candidates/:id', async (req, res) => {
   try {
-    const candidate = await Candidate.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
+    const candidate = await Candidate.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true });
     res.status(200).json(candidate);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
-
 
 // Login route
 app.post('/api/login', async (req, res) => {
@@ -152,14 +153,13 @@ app.get('/logout', (req, res) => {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
-app.use('/api/users', userRoutes); // Ensure this route is correct
-app.use('/api/auth', authRoutes); // Ensure this route is correct
+app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
 
-// The "catchall" handler: for any request that doesn't
-// match one above, send back index.html.
+// The "catchall" handler: for any request that doesn't match one above, send back index.html.
 app.get('*', (req, res) => {
-  // res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+  res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
 });
 
 // Start server
