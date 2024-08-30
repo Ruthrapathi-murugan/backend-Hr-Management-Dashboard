@@ -4,13 +4,13 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import multer from 'multer';
-import connectDB from './config/db.js'; // Correct path for db.js
-import User from './models/User.js'; // Ensure this path is correct
+import connectDB from './config/db.js';
+import User from './models/User.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
-import userRoutes from './routes/users.js'; // Ensure correct path
-import authRoutes from './routes/auth.js'; // Ensure correct path
+import userRoutes from './routes/users.js';
+import authRoutes from './routes/auth.js';
 import employeeRoutes from './routes/employeeRoutes.js';
 import LeaveRequest from './models/leaveRequestModel.js';
 
@@ -18,6 +18,7 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5000;
+const __dirname = path.resolve();
 
 // Connect to MongoDB Atlas
 connectDB();
@@ -35,9 +36,6 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files
-app.use('/images', express.static(path.join(path.resolve(), 'images'))); // Adjust based on your directory structure
-
 // Multer setup for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -48,6 +46,9 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage });
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 // Registration route
 app.post('/api/register', async (req, res) => {
@@ -74,7 +75,8 @@ app.post('/api/register', async (req, res) => {
     res.status(400).json({ message: 'Registration failed. ' + error.message });
   }
 });
-// leave
+
+// Leave request route
 app.post('/api/leave-requests', async (req, res) => {
   try {
     const leaveRequest = new LeaveRequest(req.body);
@@ -84,6 +86,36 @@ app.post('/api/leave-requests', async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+// candidate hiring
+app.get('/api/candidates', async (req, res) => {
+  try {
+    const candidates = await Candidate.find();
+    res.status(200).json(candidates);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/candidates', async (req, res) => {
+  try {
+    const candidate = new Candidate(req.body);
+    await candidate.save();
+    res.status(201).json(candidate);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.put('/api/candidates/:id', async (req, res) => {
+  try {
+    const candidate = await Candidate.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
+    res.status(200).json(candidate);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+
 // Login route
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
@@ -116,20 +148,19 @@ app.get('/logout', (req, res) => {
   res.status(200).send({ message: 'Logged out successfully' });
 });
 
-// Serve static files
-app.use('/uploads', express.static(path.join(path.resolve(), 'uploads')));
-
-// Serve frontend
-app.use(express.static(path.join(path.resolve(), '../frontend/build')));
-
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(path.resolve(), '../frontend/build', 'index.html'));
-});
+// Serve uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/users', userRoutes); // Ensure this route is correct
 app.use('/api/auth', authRoutes); // Ensure this route is correct
 app.use('/api/employees', employeeRoutes);
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back index.html.
+app.get('*', (req, res) => {
+  // res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+});
 
 // Start server
 app.listen(port, () => {
