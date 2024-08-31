@@ -12,8 +12,8 @@ import cookieParser from 'cookie-parser';
 import userRoutes from './routes/users.js';
 import authRoutes from './routes/auth.js';
 import employeeRoutes from './routes/employeeRoutes.js';
-import LeaveRequest from './models/leaveRequestModel.js';
-import Candidate from './models/Candidate.js'; // Ensure this import is correct
+import candidateRouter from './models/Candidate.js'; // Ensure this import is correct
+import leaveRoutes from './routes/leaveRequestRoutes.js'
 
 dotenv.config();
 
@@ -78,44 +78,16 @@ app.post('/api/register', async (req, res) => {
 });
 
 // Leave request route
-app.post('/api/leave-requests', async (req, res) => {
-  try {
-    const leaveRequest = new LeaveRequest(req.body);
-    await leaveRequest.save();
-    res.status(201).json(leaveRequest);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+// app.post('/api/leave-requests', async (req, res) => {
+//   try {
+//     const leaveRequest = new LeaveRequest(req.body);
+//     await leaveRequest.save();
+//     res.status(201).json(leaveRequest);
+//   } catch (error) {
+//     res.status(400).json({ error: error.message });
+//   }
+// });
 
-// Candidate hiring routes
-app.get('/api/candidates', async (req, res) => {
-  try {
-    const candidates = await Candidate.find();
-    res.status(200).json(candidates);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-app.post('/api/candidates', async (req, res) => {
-  try {
-    const candidate = new Candidate(req.body);
-    await candidate.save();
-    res.status(201).json(candidate);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-app.put('/api/candidates/:id', async (req, res) => {
-  try {
-    const candidate = await Candidate.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true });
-    res.status(200).json(candidate);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
 
 // Login route
 app.post('/api/login', async (req, res) => {
@@ -156,6 +128,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
+app.use('/api', leaveRoutes);
+app.use('/api', candidateRouter);
 
 // The "catchall" handler: for any request that doesn't match one above, send back index.html.
 app.get('*', (req, res) => {
