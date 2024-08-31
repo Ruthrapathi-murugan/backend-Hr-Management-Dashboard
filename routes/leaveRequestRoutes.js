@@ -60,16 +60,21 @@ router.patch('/leave-requests/:id', async (req, res) => {
 });
 
 // Delete leave request
-
-app.delete('/api/leave-requests/:id', async (req, res) => {
-  const { id } = req.params;
+router.delete('/leave-requests/:id', async (req, res) => {
   try {
-    await LeaveRequest.findByIdAndDelete(id); // Ensure you're using the correct model
+    const { id } = req.params;
+
+    const deletedRequest = await LeaveRequest.findByIdAndDelete(id);
+
+    if (!deletedRequest) {
+      return res.status(404).json({ message: 'Leave request not found' });
+    }
+
     res.status(200).json({ message: 'Leave request deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting leave request' });
+    console.error('Error deleting leave request:', error.message);
+    res.status(400).json({ message: 'Error deleting leave request', error: error.message });
   }
 });
-
 
 export default router;
