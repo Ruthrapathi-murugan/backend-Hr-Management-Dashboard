@@ -14,6 +14,7 @@ import authRoutes from './routes/auth.js';
 import employeeRoutes from './routes/employeeRoutes.js';
 import candidateRouter from './models/Candidate.js'; // Ensure this import is correct
 import leaveRoutes from './routes/leaveRequestRoutes.js'
+import EmployeeRoutes from './routes/employeeRoutes.js';
 
 dotenv.config();
 
@@ -77,6 +78,20 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
+app.get('/api/adminCount', (req, res) => {
+  // Implement the logic to get admin count
+  res.json({ adminCount: 10 });
+});
+
+app.get('/api/employeeCount', (req, res) => {
+  // Implement the logic to get employee count
+  res.json({ employeeCount: 50 });
+});
+
+app.get('/api/salary', (req, res) => {
+  // Implement the logic to get total salary
+  res.json({ result: [{ sumOfSalary: 50000 }] });
+});
 // Leave request route
 // app.post('/api/leave-requests', async (req, res) => {
 //   try {
@@ -130,7 +145,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api', leaveRoutes);
 app.use('/api', candidateRouter);
-
+app.use('/api/employees', EmployeeRoutes);
 // The "catchall" handler: for any request that doesn't match one above, send back index.html.
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));

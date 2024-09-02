@@ -1,21 +1,20 @@
-// routes/employeeRoutes.js
 import express from 'express';
 import multer from 'multer';
-import Employee from '../models/Employee.js'; // Adjust path as necessary
+import Employee from '../models/Employee.js';
 
 const router = express.Router();
 
 // Multer setup for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Ensure this directory exists
+    cb(null, 'uploads/'); // Ensure this directory exists or create it
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
 
-const upload = multer({ storage }); // Updated to use storage configuration
+const upload = multer({ storage });
 
 // Add employee route
 router.post('/employee', upload.single('image'), async (req, res) => {
@@ -27,7 +26,7 @@ router.post('/employee', upload.single('image'), async (req, res) => {
     const newEmployee = new Employee({
       name,
       email,
-      password,
+      password, // Consider hashing this password before saving
       address,
       salary,
       image,
@@ -43,7 +42,7 @@ router.post('/employee', upload.single('image'), async (req, res) => {
 });
 
 // Get all employees route
-router.get('/getEmployee', async (req, res) => {
+router.get('/employees', async (req, res) => {
   try {
     const employees = await Employee.find();
     res.status(200).json({ Status: 'Success', Data: employees });
